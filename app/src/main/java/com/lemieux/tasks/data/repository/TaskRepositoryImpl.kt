@@ -8,6 +8,7 @@ import com.lemieux.tasks.domain.repository.TaskRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -19,14 +20,11 @@ class TaskRepositoryImpl
     ) : TaskRepository {
         override fun getAllTasks(): Flow<List<Task>> =
             flow {
-                withContext(Dispatchers.IO) {
-                    taskDao.getAllTasks().map { it.map(TaskEntity::toTask) }.collect {
-                        withContext(Dispatchers.Default) {
-                            emit(it)
-                        }
-                    }
-                }
-            }
+                taskDao.getAllTasks()
+                    .flowOn(Dispatchers.IO)
+                    .map { it.map(TaskEntity::toTask) }
+                    .collect { emit(it) }
+            }.flowOn(Dispatchers.Default)
 
         override suspend fun insertTask(task: Task) {
             withContext(Dispatchers.IO) {
