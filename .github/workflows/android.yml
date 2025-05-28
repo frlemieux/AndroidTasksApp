@@ -20,12 +20,7 @@ jobs:
         java-version: '17'
 
     - name: Setup Android SDK
-      uses: actions/setup-android@v3
-      with:
-        distribution: 'commandlinetools'
-        version: 'latest'
-        sdkmanager: 'platform-tools'
-        ndk: 'latest'
+      uses: android-actions/setup-android@v1
 
     - name: Grant execute permission for Gradle
       run: chmod +x gradlew
@@ -41,7 +36,7 @@ jobs:
 
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v4.3.0
+Missing download info for actions/setup-android@v3      uses: actions/upload-artifact@v4.3.0
       with:
         name: test-results
         path: |
