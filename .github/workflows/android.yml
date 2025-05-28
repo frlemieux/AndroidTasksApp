@@ -3,9 +3,9 @@ name: Android CI
 env:
   ANDROID_VERSION: 30
   EMULATOR_NAME: test
-  EMULATOR_SYSTEM_IMAGE: "system-images;android-${{ env.ANDROID_VERSION }};google_apis;x86"
+  EMULATOR_SYSTEM_IMAGE: "system-images;android-30;google_apis;x86"
   EMULATOR_DEVICE: pixel
-  GRADLE_CACHE_KEY: gradle-cache-${{ hashFiles('**/*.gradle') }}
+  GRADLE_CACHE_KEY: gradle-cache-${{ github.sha }}
 
 on:
   push:
