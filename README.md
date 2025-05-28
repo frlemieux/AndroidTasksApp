@@ -1,16 +1,30 @@
 # 📝 AndroidTasksApp
 
+[![Build Status](https://github.com/frlemieux/AndroidTasksApp/actions/workflows/android.yml/badge.svg)](https://github.com/frlemieux/AndroidTasksApp/actions)
+
 A modern Android task management app built using **Kotlin**, **Jetpack Compose**, and **MVVM architecture**. Designed for simplicity and performance, this app demonstrates clean architecture principles and efficient state handling using **StateFlow** and **ViewModel**.
 
 ---
 
 ## 🚀 Features
 
-- ✅ Add, edit, and delete tasks  
-- 📌 Mark tasks as completed or pending  
+- ✅ Add and delete tasks  
 - 📱 Jetpack Compose UI for a modern and responsive experience  
 - 🧠 MVVM + Clean Architecture  
 - 🔁 Reactive state management with Kotlin `StateFlow`  
+- ✅ Comprehensive test coverage
+
+---
+
+## 📊 Test Coverage
+
+- Unit tests for core functionality
+- UI tests for task management
+- Test results visible in GitHub Actions
+
+### View Test Results
+- [GitHub Actions](https://github.com/frlemieux/AndroidTasksApp/actions)
+- [Test Artifacts](https://github.com/frlemieux/AndroidTasksApp/actions/workflows/android.yml)
 
 ---
 
