@@ -22,6 +22,15 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Setup Android Emulator
+      uses: android-actions/setup-emulator@v3
+      with:
+        api-level: 33
+        arch: x86_64
+        target: google_apis
+        emulator: pixel_3a
+        emulator-args: -no-audio -no-window -gpu swiftshader_indirect
+
     - name: Grant execute permission for Gradle
       run: chmod +x gradlew
 
