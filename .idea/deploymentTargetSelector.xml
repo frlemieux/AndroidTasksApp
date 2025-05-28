@@ -8,9 +8,6 @@
       <SelectionState runConfigName="TaskScreenTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="testEmptyTaskInputWithElementsInTheList()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="testDeleteTask()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
