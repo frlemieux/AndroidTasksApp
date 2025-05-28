@@ -22,12 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ✅ Use Java 11 for SDK tools only
-      - name: Set up JDK 11 for Android SDK
+      - name: Set up JDK 17 (default)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
+
+      - name: Set up JDK 8 (for sdkmanager)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
 
       - name: Set SKIP_JDK_VERSION_CHECK
         run: echo "SKIP_JDK_VERSION_CHECK=true" >> $GITHUB_ENV
@@ -45,22 +50,37 @@ jobs:
       - name: Install system image and create emulator
         id: emulator
         run: |
+          # Setup environment
           export ANDROID_HOME=$ANDROID_SDK_ROOT
           export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
-
+          
+          # Use Java 8 for sdkmanager
+          export JAVA_HOME=$JAVA_HOME_8_X64
+          export PATH=$JAVA_HOME/bin:$PATH
+          
+          # Install required Android components
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "${{ env.EMULATOR_SYSTEM_IMAGE }}"
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "emulator"
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "platform-tools"
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "build-tools;30.0.3"
-
+          
+          # Restore Java 17 for Gradle/emulator
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          export PATH=$JAVA_HOME/bin:$PATH
+          
+          # Create AVD
           echo "no" | avdmanager --sdk_root=$ANDROID_HOME create avd -n ${{ env.EMULATOR_NAME }} -k "${{ env.EMULATOR_SYSTEM_IMAGE }}" --device "${{ env.EMULATOR_DEVICE }}"
-
+          
+          # Start emulator
           echo "Starting emulator..."
           $ANDROID_HOME/emulator/emulator -avd ${{ env.EMULATOR_NAME }} -no-snapshot-save -no-audio -no-window &
           
+          # Wait for emulator to be ready
           echo "Waiting for emulator..."
           adb wait-for-device
-
+          
+          # Wait for boot completion
+          echo "Waiting for boot completion..."
           MAX_RETRIES=5
           RETRY=0
           while [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" != "1" ] && [ $RETRY -lt $MAX_RETRIES ]; do
@@ -68,17 +88,19 @@ jobs:
             sleep 10
             RETRY=$((RETRY+1))
           done
-
+          
           if [ $RETRY -eq $MAX_RETRIES ]; then
             echo "Error: Emulator failed to boot after $MAX_RETRIES attempts"
             exit 1
           fi
-
+          
+          # Disable animations
           echo "Disabling animations..."
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
-
+          
+          # Final status check
           echo "Final emulator status check..."
           adb devices
           echo "::set-output name=ready::true"
@@ -108,10 +130,9 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ env.GRADLE_CACHE_KEY }}
           restore-keys: |
-            gradle-cache-
+            ${{ env.GRADLE_CACHE_KEY }}-
 
-      # ✅ Use Java 17 for Gradle build
-      - name: Set up JDK 17 for build
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -141,7 +162,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.0
         with:
           name: test-results
           path: |
