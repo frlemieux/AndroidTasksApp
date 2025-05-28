@@ -28,12 +28,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up JDK 17 (for sdkmanager)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
       - name: Set SKIP_JDK_VERSION_CHECK
         run: echo "SKIP_JDK_VERSION_CHECK=true" >> $GITHUB_ENV
 
@@ -52,23 +46,37 @@ jobs:
         run: |
           # Setup environment
           export ANDROID_HOME=$ANDROID_SDK_ROOT
-          export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "PATH=$PATH"
+          echo "JAVA_HOME=$JAVA_HOME"
+          echo "SDK_ROOT=$ANDROID_HOME"
           
-          # Use Java 8 for sdkmanager
-          export JAVA_HOME=$JAVA_HOME_8_X64
-          export PATH=$JAVA_HOME/bin:$PATH
+          # Verify Java version
+          java -version
+          
+          # List available SDK components
+          echo "Listing available SDK components..."
+          sdkmanager --sdk_root=$ANDROID_HOME --list | head -n 20
           
           # Install required Android components
+          echo "Installing system image..."
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "${{ env.EMULATOR_SYSTEM_IMAGE }}"
+          
+          echo "Installing emulator..."
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "emulator"
+          
+          echo "Installing platform-tools..."
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "platform-tools"
+          
+          echo "Installing build-tools..."
           echo "y" | sdkmanager --sdk_root=$ANDROID_HOME "build-tools;30.0.3"
           
-          # Restore Java 17 for Gradle/emulator
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          export PATH=$JAVA_HOME/bin:$PATH
+          # Verify installation
+          echo "Verifying installation..."
+          sdkmanager --sdk_root=$ANDROID_HOME --list | grep "${{ env.EMULATOR_SYSTEM_IMAGE }}"
           
           # Create AVD
+          echo "Creating AVD..."
           echo "no" | avdmanager --sdk_root=$ANDROID_HOME create avd -n ${{ env.EMULATOR_NAME }} -k "${{ env.EMULATOR_SYSTEM_IMAGE }}" --device "${{ env.EMULATOR_DEVICE }}"
           
           # Start emulator
