@@ -4,9 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,21 +32,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lemieux.tasks.ui.model.TaskUi
+import com.lemieux.tasks.ui.theme.TasksAppTheme
 
 @Composable
 fun TaskManagerScreen(
@@ -61,7 +66,7 @@ fun TaskManagerScreen(
 }
 
 @Composable
-private fun TaskList(
+fun TaskList(
     taskUiState: TaskUiState,
     deleteTask: (TaskUi) -> Unit,
     addTask: () -> Unit,
@@ -69,11 +74,15 @@ private fun TaskList(
     modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
     Column(
         modifier
             .background(
                 color = MaterialTheme.colorScheme.surface,
-            ).padding(start = 24.dp, end = 24.dp, top = 24.dp),
+            )
+            .padding(start = 24.dp, end = 24.dp, top = 24.dp),
     ) {
         val taskUiStateSuccess = (taskUiState as TaskUiState.Success)
         Text(
@@ -83,7 +92,9 @@ private fun TaskList(
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth(),
         ) {
             TextField(
                 value =
@@ -110,16 +121,18 @@ private fun TaskList(
                             addTask()
                         },
                     ),
-                modifier = Modifier.focusRequester(focusRequester),
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("task_input")
+                    .focusRequester(focusRequester),
             )
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus()
-            }
             TextButton(
                 onClick = { addTask() },
                 modifier =
                     Modifier
-                        .padding(start = 8.dp)
+                        .testTag("add_task_tag")
+                        .wrapContentWidth()
+                        .padding(horizontal = 8.dp)
                         .background(MaterialTheme.colorScheme.onPrimary),
             ) {
                 Icon(
@@ -128,19 +141,18 @@ private fun TaskList(
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = "New Task",
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .padding(start = 8.dp),
+                    text = "Add",
+                    maxLines = 1,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
         LazyColumn(
-            modifier = Modifier.padding(top = 24.dp),
             state = rememberLazyListState(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .testTag("task_list")
         ) {
             items(
                 items = taskUiState.tasks,
@@ -149,15 +161,18 @@ private fun TaskList(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .background(color = MaterialTheme.colorScheme.onSecondary)
-                            .border(border = ButtonDefaults.outlinedButtonBorder)
-                            .clip(shape = RoundedCornerShape(6.dp)),
+                    modifier = Modifier
+                        .testTag("task_item")
+                        .fillMaxWidth()
+                        .background(color = MaterialTheme.colorScheme.onSecondary)
+                        .border(border = ButtonDefaults.outlinedButtonBorder)
+                        .clip(shape = RoundedCornerShape(6.dp)),
                 ) {
                     Text(text = "- ${task.name}", modifier = Modifier.padding(16.dp))
-                    IconButton(onClick = { deleteTask(task) }) {
+                    IconButton(
+                        onClick = { deleteTask(task) },
+                        modifier = Modifier.testTag("delete_task_button")
+                    ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Delete Task",
@@ -167,5 +182,18 @@ private fun TaskList(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TaskListPreview() {
+    TasksAppTheme {
+        TaskList(
+            taskUiState = TaskScreenPreviewData.PreviewTaskUiState,
+            deleteTask = {},
+            addTask = {},
+            onValueChange = {},
+        )
     }
 }

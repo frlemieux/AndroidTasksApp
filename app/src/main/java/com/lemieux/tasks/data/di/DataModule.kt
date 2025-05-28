@@ -18,13 +18,7 @@ object DataModule {
     @Singleton
     fun provideDb(
         @ApplicationContext context: Context,
-    ): TaskDatabase =
-        Room
-            .databaseBuilder(
-                context,
-                TaskDatabase::class.java,
-                "tasks.db",
-            ).build()
+    ): TaskDatabase = TaskDatabase.getInstance(context)
 
     @Provides
     @Singleton

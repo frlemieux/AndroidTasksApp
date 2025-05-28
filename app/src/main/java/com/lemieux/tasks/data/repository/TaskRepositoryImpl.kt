@@ -19,12 +19,9 @@ class TaskRepositoryImpl
         private val taskDao: TaskDao,
     ) : TaskRepository {
         override fun getAllTasks(): Flow<List<Task>> =
-            flow {
-                taskDao.getAllTasks()
-                    .flowOn(Dispatchers.IO)
-                    .map { it.map(TaskEntity::toTask) }
-                    .collect { emit(it) }
-            }.flowOn(Dispatchers.Default)
+            taskDao.getAllTasks()
+                .flowOn(Dispatchers.IO)
+                .map { it.map(TaskEntity::toTask) }
 
         override suspend fun insertTask(task: Task) {
             withContext(Dispatchers.IO) {

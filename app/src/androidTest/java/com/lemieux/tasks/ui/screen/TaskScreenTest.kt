@@ -1,81 +1,84 @@
 package com.lemieux.tasks.ui.screen
 
-import androidx.test.core.app.ActivityScenario
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.typeText
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.ext.junit.rules.ActivityScenarioRule
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lemieux.tasks.MainActivity
-import com.lemieux.tasks.R
+import com.lemieux.tasks.ui.model.TaskUi
+import kotlinx.collections.immutable.toPersistentList
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(ExperimentalComposeUiApi::class)
 @RunWith(AndroidJUnit4::class)
 class TaskScreenTest {
+
     @get:Rule
-    val activityScenarioRule = ActivityScenarioRule(MainActivity::class.java)
+    val composeTestRule = createComposeRule()
 
-    @Before
-    fun setup() {
-        // Launch the activity
-        activityScenarioRule.scenario.onActivity { activity ->
-            // Ensure the activity is fully started
+    @Test
+    fun taskList_addAndDeleteTask_updatesCorrectly() {
+        val taskList = mutableStateListOf<TaskUi>(TaskUi("Initial Task"))
+        var newTaskText = ""
+
+        composeTestRule.setContent {
+            TaskList(
+                taskUiState = TaskUiState.Success(
+                    tasks = taskList.toPersistentList(),
+                    newTask = newTaskText
+                ),
+                deleteTask = { taskList.remove(it) },
+                addTask = {
+                    taskList.add(TaskUi(newTaskText))
+                },
+                onValueChange = { newTaskText = it }
+            )
         }
-    }
 
-    @Test
-    fun testAddTask() {
-        // Click the add button
-        onView(withId(R.id.add_task_button))
-            .perform(click())
+        val newTask = "Buy groceries"
 
-        // Type text in the input field
-        onView(withId(R.id.task_input))
-            .perform(typeText("Test Task"))
+        composeTestRule
+            .onNodeWithTag("task_input")
+            .performTextInput(newTask)
 
-        // Click the add button again to save the task
-        onView(withId(R.id.add_task_button))
-            .perform(click())
+        composeTestRule
+            .onNodeWithTag("add_task_tag")
+            .performClick()
 
-        // Verify the task is displayed
-        onView(withText("Test Task"))
-            .check(matches(isDisplayed()))
-    }
+        composeTestRule
+            .waitUntil(timeoutMillis = 3_000) {
+                taskList.any { item -> item.name == newTask }
+            }
 
-    @Test
-    fun testDeleteTask() {
-        // Add a test task first
-        onView(withId(R.id.add_task_button))
-            .perform(click())
-        onView(withId(R.id.task_input))
-            .perform(typeText("Task to Delete"))
-        onView(withId(R.id.add_task_button))
-            .perform(click())
+        // Ensure the task is visible
+        composeTestRule
+            .onNodeWithText("- $newTask")
+            .assertIsDisplayed()
 
-        // Find and click the delete button for the task
-        onView(withText("Task to Delete"))
-            .perform(click())
-        onView(withId(R.id.delete_button))
-            .perform(click())
+        // Delete the initial task
+        composeTestRule
+            .onAllNodesWithTag("delete_task_button")
+            .onFirst()
+            .performClick()
 
-        // Verify the task is no longer displayed
-        onView(withText("Task to Delete"))
-            .check(matches(isNotDisplayed()))
-    }
+        composeTestRule.waitUntil(timeoutMillis = 3_000) {
+            !taskList.any { it.name == "Initial Task" }
+        }
 
-    @Test
-    fun testEmptyTaskInput() {
-        // Click the add button without entering text
-        onView(withId(R.id.add_task_button))
-            .perform(click())
-
-        // Verify no empty task is added
-        onView(withText(""))
-            .check(matches(isNotDisplayed()))
+        // Ensure the old task is gone
+        composeTestRule
+            .onNodeWithText("- Initial Task")
+            .assertDoesNotExist()
     }
 }

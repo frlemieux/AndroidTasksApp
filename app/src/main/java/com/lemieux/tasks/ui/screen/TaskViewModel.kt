@@ -1,5 +1,6 @@
 package com.lemieux.tasks.ui.screen
 
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -70,6 +71,7 @@ private fun Task.toTaskUi(): TaskUi = TaskUi(name = name)
 
 private fun TaskUi.toTask(): Task = Task(name = name)
 
+@Stable
 sealed class TaskUiState {
     data class Success(
         val newTask: String,
