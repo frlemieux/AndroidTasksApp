@@ -22,15 +22,24 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Setup Android Emulator
-      uses: android-actions/setup-emulator@v3
-      with:
-        api-level: 33
-        arch: x86_64
-        target: google_apis
-        emulator: pixel_3a
-        emulator-args: -no-audio -no-window -gpu swiftshader_indirect
+    - name: Enable KVM
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+        sudo adduser $USER libvirt
+        sudo adduser $USER kvm
 
+    - name: Create and start emulator
+      run: |
+        echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;x86" --device "pixel"
+        emulator -avd test -no-snapshot-save -no-audio -no-window &
+        adb wait-for-device
+        adb shell settings put global window_animation_scale 0
+        adb shell settings put global transition_animation_scale 0
+        adb shell settings put global animator_duration_scale 0
+      env:
+        ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
+        
     - name: Grant execute permission for Gradle
       run: chmod +x gradlew
 
