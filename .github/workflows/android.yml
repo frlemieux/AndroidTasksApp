@@ -20,11 +20,7 @@ jobs:
         java-version: '17'
 
     - name: Setup Android SDK
-      uses: actions/setup-android@v3
-      with:
-        sdk: '33'
-        ndk: 'latest'
-        tools: 'latest'
+      uses: android-actions/setup-android@v3
 
     - name: Grant execute permission for Gradle
       run: chmod +x gradlew
