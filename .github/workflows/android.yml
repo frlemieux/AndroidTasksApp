@@ -29,8 +29,9 @@ jobs:
         sudo adduser $USER libvirt
         sudo adduser $USER kvm
 
-    - name: Create and start emulator
+    - name: Install system image and create emulator
       run: |
+        echo "y" | sdkmanager "system-images;android-30;google_apis;x86"
         echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;x86" --device "pixel"
         emulator -avd test -no-snapshot-save -no-audio -no-window &
         adb wait-for-device
@@ -39,7 +40,7 @@ jobs:
         adb shell settings put global animator_duration_scale 0
       env:
         ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
-        
+
     - name: Grant execute permission for Gradle
       run: chmod +x gradlew
 
