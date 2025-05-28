@@ -40,10 +40,11 @@ jobs:
 
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v3.3.0
       with:
         name: test-results
         path: |
-          app/build/test-results/**
-          app/build/reports/tests/**
-          app/build/outputs/androidTest-results/**
+          app/build/test-results/
+          app/build/reports/tests/
+          app/build/outputs/androidTest-results/
+          app/build/outputs/androidTest-results/connected/**
