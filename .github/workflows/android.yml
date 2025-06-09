@@ -77,7 +77,7 @@ jobs:
           
           # Create AVD
           echo "Creating AVD..."
-          echo "no" | avdmanager --sdk_root=$ANDROID_HOME create avd -n ${{ env.EMULATOR_NAME }} -k "${{ env.EMULATOR_SYSTEM_IMAGE }}" --device "${{ env.EMULATOR_DEVICE }}"
+          echo "no" | avdmanager create avd -n ${{ env.EMULATOR_NAME }} -k "${{ env.EMULATOR_SYSTEM_IMAGE }}" --device "${{ env.EMULATOR_DEVICE }}" --sdk_root=$ANDROID_HOME
           
           # Start emulator
           echo "Starting emulator..."
