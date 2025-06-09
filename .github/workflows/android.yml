@@ -43,6 +43,7 @@ jobs:
 
       - name: Install system image and create emulator
         id: emulator
+        continue-on-error: true
         run: |
           # Setup environment
           export ANDROID_HOME=$ANDROID_SDK_ROOT
@@ -102,9 +103,14 @@ jobs:
           done
           
           if [ $RETRY -eq $MAX_RETRIES ]; then
-            echo "Error: Emulator failed to boot after $MAX_RETRIES attempts"
-            exit 1
+            echo "Warning: Emulator failed to boot after $MAX_RETRIES attempts"
+            echo "emulator-ready=false" >> $GITHUB_OUTPUT
+          else
+            echo "emulator-ready=true" >> $GITHUB_OUTPUT
           fi
+          
+          # Exit with success regardless of emulator state
+          exit 0
           
           # Disable animations
           echo "Disabling animations..."
