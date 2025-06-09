@@ -77,15 +77,10 @@ jobs:
           sdkmanager --sdk_root=$ANDROID_HOME --list | grep "${{ env.EMULATOR_SYSTEM_IMAGE }}"
           
           # Create AVD
-          echo "Creating AVD..."
-          export ANDROID_HOME=$ANDROID_HOME
-          export ANDROID_SDK_ROOT=$ANDROID_HOME
           echo "no" | avdmanager create avd -n ${{ env.EMULATOR_NAME }} -k "${{ env.EMULATOR_SYSTEM_IMAGE }}" --device "${{ env.EMULATOR_DEVICE }}"
           
           # Start emulator
           echo "Starting emulator..."
-          export ANDROID_HOME=$ANDROID_HOME
-          export ANDROID_SDK_ROOT=$ANDROID_HOME
           $ANDROID_HOME/emulator/emulator -avd ${{ env.EMULATOR_NAME }} -no-snapshot-save -no-audio -no-window &
           
           # Wait for emulator to be ready
