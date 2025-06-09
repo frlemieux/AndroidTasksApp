@@ -4,6 +4,9 @@ jobs:
   build:
     docker:
       - image: circleci/android:api-30-node
+    resource_class: xlarge
+    environment:
+      JAVA_HOME: /usr/local/openjdk-17
     working_directory: ~/repo
     environment:
       JVM_OPTS: -Xmx3200m
